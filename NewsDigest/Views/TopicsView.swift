@@ -9,64 +9,46 @@ struct TopicsView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            HStack(alignment: .firstTextBaseline) {
-                Text("Topics")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
-
-                Text("\(viewModel.topics.count)")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(.quaternary.opacity(0.5), in: Capsule())
-
+            HStack(alignment: .lastTextBaseline) {
+                Text("Your Topics")
+                    .font(.system(size: 28, weight: .bold, design: .serif))
                 Spacer()
-
                 Button {
                     showAddSheet = true
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: 5) {
                         Image(systemName: "plus")
                             .font(.system(size: 11, weight: .bold))
-                        Text("Add Topic")
-                            .font(.system(size: 12, weight: .medium))
+                        Text("New Topic")
+                            .font(.system(size: 12, weight: .semibold))
                     }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(
-                        LinearGradient(
-                            colors: [.purple, .indigo],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        in: Capsule()
-                    )
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.flipRed, in: Capsule())
                     .foregroundStyle(.white)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
+            .padding(.horizontal, 28)
+            .padding(.top, 22)
             .padding(.bottom, 16)
 
-            Rectangle()
-                .fill(.quaternary.opacity(0.4))
-                .frame(height: 1)
+            Rectangle().fill(Color.secondary.opacity(0.1)).frame(height: 1)
 
             if viewModel.topics.isEmpty {
-                EmptyStateView(
-                    icon: "tag",
-                    title: "No topics yet",
-                    subtitle: "Create topics with keywords to automatically filter and prioritize your feed."
-                )
+                topicsEmpty
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 10) {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: 14),
+                        GridItem(.flexible(), spacing: 14),
+                        GridItem(.flexible(), spacing: 14)
+                    ], spacing: 14) {
                         ForEach(viewModel.topics, id: \.id) { topic in
-                            TopicCard(topic: topic)
+                            TopicTile(topic: topic)
                         }
                     }
-                    .padding(24)
+                    .padding(28)
                 }
             }
         }
@@ -75,11 +57,10 @@ struct TopicsView: View {
                 name: $newTopicName,
                 keywords: $newTopicKeywords,
                 onSave: {
-                    let keywordList = newTopicKeywords
-                        .components(separatedBy: ",")
+                    let kws = newTopicKeywords.components(separatedBy: ",")
                         .map { $0.trimmingCharacters(in: .whitespaces) }
                         .filter { !$0.isEmpty }
-                    viewModel.addTopic(name: newTopicName, keywords: keywordList)
+                    viewModel.addTopic(name: newTopicName, keywords: kws)
                     newTopicName = ""
                     newTopicKeywords = ""
                     showAddSheet = false
@@ -92,15 +73,31 @@ struct TopicsView: View {
             )
         }
     }
+
+    private var topicsEmpty: some View {
+        VStack(spacing: 14) {
+            Spacer()
+            Image(systemName: "number")
+                .font(.system(size: 40, weight: .ultraLight))
+                .foregroundStyle(.secondary)
+            Text("No topics yet")
+                .font(.system(size: 18, weight: .semibold, design: .serif))
+            Text("Create topics to personalize your feed.")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
 }
 
-// MARK: - Topic Card
+// MARK: - Topic Tile (Flipboard magazine-style)
 
-struct TopicCard: View {
+struct TopicTile: View {
     let topic: Topic
     @EnvironmentObject var viewModel: NewsViewModel
-    @State private var isExpanded = false
     @State private var isHovered = false
+    @State private var isExpanded = false
 
     var matchCount: Int {
         viewModel.articles.filter { $0.topicName == topic.name }.count
@@ -108,114 +105,97 @@ struct TopicCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 14) {
-                // Topic icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+            // Header banner
+            ZStack(alignment: .topTrailing) {
+                ZStack(alignment: .bottomLeading) {
+                    Rectangle()
                         .fill(
                             topic.enabled
-                                ? LinearGradient(colors: [.purple.opacity(0.15), .indigo.opacity(0.1)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                : LinearGradient(colors: [.gray.opacity(0.08), .gray.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                ? LinearGradient(colors: [Color.flipRed, Color(red: 0.7, green: 0.08, blue: 0.1)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                : LinearGradient(colors: [Color.gray.opacity(0.3), Color.gray.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing)
                         )
-                        .frame(width: 40, height: 40)
+                        .frame(height: 70)
 
-                    Image(systemName: "tag.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(topic.enabled ? Color.purple : Color.gray.opacity(0.4))
+                    Text("#")
+                        .font(.system(size: 36, weight: .black, design: .serif))
+                        .foregroundStyle(.white.opacity(0.15))
+                        .padding(.leading, 12)
+                        .padding(.bottom, 4)
                 }
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(topic.name)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(topic.enabled ? .primary : .secondary)
-
-                    HStack(spacing: 8) {
-                        Text("\(topic.keywords.count) keywords")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
-
-                        if matchCount > 0 {
-                            HStack(spacing: 3) {
-                                Circle()
-                                    .fill(.green)
-                                    .frame(width: 5, height: 5)
-                                Text("\(matchCount) matches")
-                                    .font(.system(size: 11, weight: .medium))
-                                    .foregroundStyle(.green)
-                            }
-                        }
-                    }
-                }
-
-                Spacer()
 
                 Toggle("", isOn: Binding(
                     get: { topic.enabled },
                     set: { _ in viewModel.toggleTopic(topic) }
                 ))
                 .toggleStyle(.switch)
-                .controlSize(.small)
+                .controlSize(.mini)
                 .labelsHidden()
-
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isExpanded.toggle()
-                    }
-                } label: {
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                        .rotationEffect(.degrees(isExpanded ? -180 : 0))
-                        .frame(width: 28, height: 28)
-                        .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                }
-                .buttonStyle(.plain)
-
-                Button(role: .destructive) {
-                    viewModel.deleteTopic(topic)
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 11))
-                        .foregroundStyle(.red.opacity(0.6))
-                        .frame(width: 28, height: 28)
-                        .background(.red.opacity(0.06), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                .opacity(isHovered ? 1 : 0)
+                .padding(8)
             }
-            .padding(14)
 
-            if isExpanded {
-                Rectangle()
-                    .fill(.quaternary.opacity(0.3))
-                    .frame(height: 1)
-                    .padding(.horizontal, 14)
+            // Content
+            VStack(alignment: .leading, spacing: 6) {
+                Text(topic.name)
+                    .font(.system(size: 14, weight: .bold, design: .serif))
+                    .foregroundStyle(topic.enabled ? .primary : .secondary)
 
-                FlowLayout(spacing: 6) {
-                    ForEach(topic.keywords, id: \.self) { keyword in
-                        Text(keyword)
-                            .font(.system(size: 11, weight: .medium))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(.purple.opacity(0.08), in: Capsule())
-                            .foregroundStyle(.purple)
+                HStack(spacing: 10) {
+                    Text("\(topic.keywords.count) keywords")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                    if matchCount > 0 {
+                        Text("\(matchCount) matches")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.green)
                     }
                 }
-                .padding(14)
+
+                if isExpanded {
+                    FlowLayout(spacing: 4) {
+                        ForEach(topic.keywords, id: \.self) { kw in
+                            Text(kw)
+                                .font(.system(size: 10, weight: .medium))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color.flipRed.opacity(0.08), in: Capsule())
+                                .foregroundStyle(Color.flipRed)
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+
+                HStack(spacing: 6) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+                    } label: {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+
+                    Button(role: .destructive) {
+                        viewModel.deleteTopic(topic)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.red.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .opacity(isHovered ? 1 : 0)
+                }
             }
+            .padding(12)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor))
-        )
+        .background(Color.flipCard, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(.quaternary.opacity(isHovered ? 0.8 : 0.4), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.secondary.opacity(isHovered ? 0.15 : 0.06), lineWidth: 1)
         )
-        .shadow(color: .black.opacity(isHovered ? 0.06 : 0.02), radius: isHovered ? 8 : 2, y: isHovered ? 4 : 1)
-        .onHover { h in
-            withAnimation(.easeInOut(duration: 0.15)) { isHovered = h }
-        }
+        .shadow(color: .black.opacity(isHovered ? 0.08 : 0.03), radius: isHovered ? 8 : 3, y: isHovered ? 4 : 1)
+        .onHover { h in withAnimation(.easeOut(duration: 0.15)) { isHovered = h } }
     }
 }
 
@@ -229,67 +209,51 @@ struct AddTopicSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Header
-            HStack {
+            HStack(spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(LinearGradient(colors: [.purple, .indigo], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 32, height: 32)
-
-                    Image(systemName: "tag.fill")
-                        .font(.system(size: 14, weight: .semibold))
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.flipRed)
+                        .frame(width: 30, height: 30)
+                    Text("#")
+                        .font(.system(size: 16, weight: .black, design: .serif))
                         .foregroundStyle(.white)
                 }
-
                 Text("New Topic")
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .font(.system(size: 18, weight: .bold, design: .serif))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("NAME")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.tertiary)
-                    .tracking(0.5)
-
+                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary).tracking(0.5)
                 TextField("e.g. AI & Machine Learning", text: $name)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                     .padding(10)
-                    .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("KEYWORDS")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.tertiary)
-                    .tracking(0.5)
-
-                TextField("artificial intelligence, machine learning, llm, gpt", text: $keywords)
+                    .font(.system(size: 10, weight: .bold)).foregroundStyle(.secondary).tracking(0.5)
+                TextField("artificial intelligence, llm, gpt, deep learning", text: $keywords)
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                     .padding(10)
-                    .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-
-                Text("Separate keywords with commas. Articles containing any keyword will match.")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.quaternary)
+                    .background(Color.secondary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                Text("Comma-separated. Articles matching any keyword will be tagged.")
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
             }
 
             HStack {
                 Spacer()
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
-                    .font(.system(size: 13))
-
                 Button(action: onSave) {
-                    Text("Create Topic")
-                        .font(.system(size: 13, weight: .medium))
-                        .padding(.horizontal, 16)
+                    Text("Create")
+                        .font(.system(size: 13, weight: .semibold))
+                        .padding(.horizontal, 20)
                         .padding(.vertical, 7)
-                        .background(
-                            LinearGradient(colors: [.purple, .indigo], startPoint: .leading, endPoint: .trailing),
-                            in: Capsule()
-                        )
+                        .background(Color.flipRed, in: Capsule())
                         .foregroundStyle(.white)
                 }
                 .buttonStyle(.plain)
@@ -309,38 +273,28 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = arrange(proposal: proposal, subviews: subviews)
-        return result.size
+        arrange(proposal: proposal, subviews: subviews).size
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let result = arrange(proposal: proposal, subviews: subviews)
-        for (index, position) in result.positions.enumerated() {
-            subviews[index].place(at: CGPoint(x: bounds.minX + position.x, y: bounds.minY + position.y), proposal: .unspecified)
+        for (i, pos) in result.positions.enumerated() {
+            subviews[i].place(at: CGPoint(x: bounds.minX + pos.x, y: bounds.minY + pos.y), proposal: .unspecified)
         }
     }
 
     private func arrange(proposal: ProposedViewSize, subviews: Subviews) -> (size: CGSize, positions: [CGPoint]) {
-        let maxWidth = proposal.width ?? .infinity
+        let maxW = proposal.width ?? .infinity
         var positions: [CGPoint] = []
-        var x: CGFloat = 0
-        var y: CGFloat = 0
-        var rowHeight: CGFloat = 0
-        var maxX: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > maxWidth && x > 0 {
-                x = 0
-                y += rowHeight + spacing
-                rowHeight = 0
-            }
+        var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0, maxX: CGFloat = 0
+        for sv in subviews {
+            let s = sv.sizeThatFits(.unspecified)
+            if x + s.width > maxW && x > 0 { x = 0; y += rowH + spacing; rowH = 0 }
             positions.append(CGPoint(x: x, y: y))
-            rowHeight = max(rowHeight, size.height)
-            x += size.width + spacing
+            rowH = max(rowH, s.height)
+            x += s.width + spacing
             maxX = max(maxX, x)
         }
-
-        return (CGSize(width: maxX, height: y + rowHeight), positions)
+        return (CGSize(width: maxX, height: y + rowH), positions)
     }
 }

@@ -10,15 +10,12 @@ struct FeedView: View {
 
     var filteredArticles: [Article] {
         var result = sortByRank ? viewModel.rankedArticles : viewModel.articles
-
         if showTopicMatchesOnly {
             result = result.filter { $0.topicName != nil }
         }
-
         if let source = selectedSource {
             result = result.filter { $0.source == source }
         }
-
         if !searchText.isEmpty {
             let query = searchText.lowercased()
             result = result.filter {
@@ -28,127 +25,20 @@ struct FeedView: View {
                 ($0.topicName?.lowercased().contains(query) ?? false)
             }
         }
-
         return result
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 12) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("Feed")
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+            feedHeader
+            feedFilters
 
-                    Text("\(filteredArticles.count)")
-                        .font(.system(size: 13, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(.quaternary.opacity(0.5), in: Capsule())
+            Rectangle().fill(Color.secondary.opacity(0.1)).frame(height: 1)
 
-                    Spacer()
-
-                    Button {
-                        Task { await viewModel.fetchAllNews() }
-                    } label: {
-                        HStack(spacing: 6) {
-                            if viewModel.isFetching {
-                                ProgressView()
-                                    .scaleEffect(0.5)
-                                    .frame(width: 14, height: 14)
-                            } else {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 11, weight: .semibold))
-                            }
-                            Text(viewModel.isFetching ? "Updating..." : "Refresh")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 7)
-                        .background(.blue.opacity(0.1), in: Capsule())
-                        .foregroundStyle(.blue)
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(viewModel.isFetching)
-                }
-
-                // Filter bar
-                HStack(spacing: 10) {
-                    // Search
-                    HStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.tertiary)
-                        TextField("Search...", text: $searchText)
-                            .textFieldStyle(.plain)
-                            .font(.system(size: 12))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .frame(maxWidth: 220)
-
-                    // Source pills
-                    HStack(spacing: 4) {
-                        FilterPill(label: "All", isSelected: selectedSource == nil) {
-                            selectedSource = nil
-                        }
-                        ForEach(ArticleSource.allCases, id: \.self) { source in
-                            FilterPill(
-                                label: source.displayName,
-                                icon: source.iconName,
-                                isSelected: selectedSource == source
-                            ) {
-                                selectedSource = selectedSource == source ? nil : source
-                            }
-                        }
-                    }
-
-                    Spacer()
-
-                    // Toggle pills
-                    HStack(spacing: 4) {
-                        TogglePill(icon: "tag", label: "Topics", isOn: $showTopicMatchesOnly)
-                        TogglePill(icon: "arrow.up.arrow.down", label: "Ranked", isOn: $sortByRank)
-                    }
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-            .padding(.bottom, 14)
-
-            Rectangle()
-                .fill(.quaternary.opacity(0.4))
-                .frame(height: 1)
-
-            // Article list
             if filteredArticles.isEmpty {
-                EmptyStateView(
-                    icon: "newspaper",
-                    title: "No articles yet",
-                    subtitle: "Pull the latest stories from your configured sources.",
-                    actionLabel: "Fetch News",
-                    onAction: viewModel.isFetching ? nil : {
-                        Task { await viewModel.fetchAllNews() }
-                    }
-                )
+                emptyState
             } else {
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(Array(filteredArticles.enumerated()), id: \.element.id) { index, article in
-                            ArticleRow(article: article, onRead: { readerArticle = article })
-
-                            if index < filteredArticles.count - 1 {
-                                Rectangle()
-                                    .fill(.quaternary.opacity(0.3))
-                                    .frame(height: 1)
-                                    .padding(.leading, 60)
-                            }
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
+                feedContent
             }
         }
         .sheet(item: $readerArticle) { article in
@@ -156,247 +46,373 @@ struct FeedView: View {
                 .frame(width: 900, height: 650)
         }
     }
+
+    // MARK: - Header
+
+    private var feedHeader: some View {
+        HStack(alignment: .lastTextBaseline, spacing: 12) {
+            Text("Your Daily Brief")
+                .font(.system(size: 28, weight: .bold, design: .serif))
+
+            Spacer()
+
+            Text("\(filteredArticles.count) stories")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 28)
+        .padding(.top, 22)
+        .padding(.bottom, 6)
+    }
+
+    // MARK: - Filters
+
+    private var feedFilters: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                // Search
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                    TextField("Search", text: $searchText)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 12))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .frame(width: 160)
+                .background(Color.secondary.opacity(0.06), in: Capsule())
+
+                Rectangle().fill(Color.secondary.opacity(0.15)).frame(width: 1, height: 20)
+
+                // Source pills
+                SourcePill(label: "All", isSelected: selectedSource == nil) {
+                    selectedSource = nil
+                }
+                ForEach(ArticleSource.allCases, id: \.self) { source in
+                    SourcePill(label: source.displayName, isSelected: selectedSource == source) {
+                        selectedSource = selectedSource == source ? nil : source
+                    }
+                }
+
+                Rectangle().fill(Color.secondary.opacity(0.15)).frame(width: 1, height: 20)
+
+                SourcePill(label: "Topics Only", isSelected: showTopicMatchesOnly) {
+                    showTopicMatchesOnly.toggle()
+                }
+                SourcePill(label: "Ranked", isSelected: sortByRank) {
+                    sortByRank.toggle()
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.vertical, 10)
+        }
+    }
+
+    // MARK: - Content Grid
+
+    private var feedContent: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Hero card — first article
+                if let hero = filteredArticles.first {
+                    HeroCard(article: hero) { readerArticle = hero }
+                }
+
+                // Two-column grid for remaining articles
+                let remaining = Array(filteredArticles.dropFirst())
+                if !remaining.isEmpty {
+                    LazyVGrid(columns: [
+                        GridItem(.flexible(), spacing: 16),
+                        GridItem(.flexible(), spacing: 16)
+                    ], spacing: 16) {
+                        ForEach(remaining, id: \.id) { article in
+                            StoryCard(article: article) { readerArticle = article }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 28)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            Spacer()
+            Image(systemName: "newspaper")
+                .font(.system(size: 40, weight: .ultraLight))
+                .foregroundStyle(.secondary)
+            Text("No stories yet")
+                .font(.system(size: 18, weight: .semibold, design: .serif))
+            Text("Pull the latest from your sources.")
+                .font(.system(size: 13))
+                .foregroundStyle(.secondary)
+            if !viewModel.isFetching {
+                Button {
+                    Task { await viewModel.fetchAllNews() }
+                } label: {
+                    Text("Fetch News")
+                        .font(.system(size: 13, weight: .semibold))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 9)
+                        .background(Color.flipRed, in: Capsule())
+                        .foregroundStyle(.white)
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+    }
 }
 
-// MARK: - Filter Pill
+// MARK: - Source Pill
 
-struct FilterPill: View {
+struct SourcePill: View {
     let label: String
-    var icon: String? = nil
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 9))
-                }
-                Text(label)
-                    .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                isSelected ? Color.blue.opacity(0.12) : Color.clear,
-                in: Capsule()
-            )
-            .foregroundStyle(isSelected ? .blue : .secondary)
+            Text(label)
+                .font(.system(size: 11, weight: isSelected ? .bold : .medium))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    isSelected ? Color.flipRed : Color.secondary.opacity(0.06),
+                    in: Capsule()
+                )
+                .foregroundStyle(isSelected ? .white : .secondary)
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Toggle Pill
+// MARK: - Hero Card (first/featured article)
 
-struct TogglePill: View {
-    let icon: String
-    let label: String
-    @Binding var isOn: Bool
-
-    var body: some View {
-        Button {
-            withAnimation(.easeInOut(duration: 0.15)) { isOn.toggle() }
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 9))
-                Text(label)
-                    .font(.system(size: 11, weight: isOn ? .semibold : .regular))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                isOn ? Color.purple.opacity(0.12) : Color.secondary.opacity(0.08),
-                in: Capsule()
-            )
-            .foregroundStyle(isOn ? .purple : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-// MARK: - Empty State
-
-struct EmptyStateView: View {
-    let icon: String
-    let title: String
-    let subtitle: String
-    var actionLabel: String = ""
-    var onAction: (() -> Void)? = nil
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-
-            ZStack {
-                Circle()
-                    .fill(Color.blue.opacity(0.06))
-                    .frame(width: 80, height: 80)
-
-                Image(systemName: icon)
-                    .font(.system(size: 30, weight: .light))
-                    .foregroundStyle(.secondary)
-            }
-
-            VStack(spacing: 6) {
-                Text(title)
-                    .font(.system(size: 17, weight: .semibold, design: .rounded))
-
-                Text(subtitle)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 280)
-            }
-
-            if let handler = onAction {
-                Button(action: handler) {
-                    Text(actionLabel)
-                        .font(.system(size: 13, weight: .medium))
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
-                        .background(Color.blue, in: Capsule())
-                        .foregroundStyle(.white)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-// MARK: - Article Row
-
-struct ArticleRow: View {
+struct HeroCard: View {
     let article: Article
-    let onRead: () -> Void
+    let onTap: () -> Void
     @State private var isHovered = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            // Source indicator
-            ZStack {
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(sourceColor.opacity(0.1))
-                    .frame(width: 36, height: 36)
+        VStack(alignment: .leading, spacing: 0) {
+            // Color banner
+            ZStack(alignment: .bottomLeading) {
+                Rectangle()
+                    .fill(bannerGradient)
+                    .frame(height: 140)
 
-                Image(systemName: article.source.iconName)
-                    .font(.system(size: 14))
-                    .foregroundStyle(sourceColor)
+                VStack(alignment: .leading, spacing: 4) {
+                    if let topic = article.topicName {
+                        Text(topic.uppercased())
+                            .font(.system(size: 10, weight: .heavy))
+                            .tracking(1.2)
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                    Text(article.sourceName.uppercased())
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(0.8)
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                .padding(18)
             }
 
             // Content
-            VStack(alignment: .leading, spacing: 5) {
+            VStack(alignment: .leading, spacing: 10) {
                 Text(article.title)
-                    .font(.system(size: 13, weight: article.isRead ? .regular : .semibold))
-                    .foregroundStyle(article.isRead ? .secondary : .primary)
-                    .lineLimit(2)
+                    .font(.system(size: 22, weight: .bold, design: .serif))
+                    .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
-
-                HStack(spacing: 6) {
-                    Text(article.sourceName)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.tertiary)
-
-                    if article.hnPoints > 0 {
-                        HStack(spacing: 2) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 8, weight: .bold))
-                            Text("\(article.hnPoints)")
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
-                        }
-                        .foregroundStyle(.orange)
-                    }
-
-                    if article.hnComments > 0 {
-                        HStack(spacing: 2) {
-                            Image(systemName: "bubble.left")
-                                .font(.system(size: 8))
-                            Text("\(article.hnComments)")
-                                .font(.system(size: 11, design: .rounded))
-                        }
-                        .foregroundStyle(.tertiary)
-                    }
-
-                    if let topic = article.topicName {
-                        Text(topic)
-                            .font(.system(size: 10, weight: .medium))
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2)
-                            .background(.blue.opacity(0.1), in: Capsule())
-                            .foregroundStyle(.blue)
-                    }
-
-                    Spacer()
-
-                    if let pub = article.publishedAt {
-                        Text(pub.formatted(.relative(presentation: .named)))
-                            .font(.system(size: 10))
-                            .foregroundStyle(.quaternary)
-                    }
-                }
 
                 if let summary = article.summary, !summary.isEmpty {
                     Text(summary)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.tertiary)
-                        .lineLimit(2)
-                        .padding(.top, 1)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
                 }
-            }
 
-            // Actions — only visible on hover
-            HStack(spacing: 2) {
-                IconAction(icon: "doc.text", help: "Read in app") { onRead() }
-                IconAction(icon: "safari", help: "Open in browser") {
-                    if let url = URL(string: article.url) {
-                        NSWorkspace.shared.open(url)
-                        article.isRead = true
-                    }
-                }
-                IconAction(
-                    icon: article.isBookmarked ? "bookmark.fill" : "bookmark",
-                    help: "Bookmark",
-                    tint: article.isBookmarked ? .yellow : nil
-                ) {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        article.isBookmarked.toggle()
-                    }
+                HStack(spacing: 12) {
+                    heroMeta
+                    Spacer()
+                    heroActions
                 }
             }
-            .opacity(isHovered ? 1 : 0)
+            .padding(18)
         }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-        .background(
-            RoundedRectangle(cornerRadius: 0)
-                .fill(isHovered ? Color.primary.opacity(0.03) : Color.clear)
-        )
+        .background(Color.flipCard, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(isHovered ? 0.1 : 0.04), radius: isHovered ? 12 : 4, y: isHovered ? 6 : 2)
+        .scaleEffect(isHovered ? 1.005 : 1.0)
         .contentShape(Rectangle())
-        .onTapGesture { onRead() }
-        .onHover { hovering in
-            withAnimation(.easeInOut(duration: 0.12)) {
-                isHovered = hovering
+        .onTapGesture { onTap() }
+        .onHover { h in withAnimation(.easeOut(duration: 0.15)) { isHovered = h } }
+    }
+
+    private var heroMeta: some View {
+        HStack(spacing: 8) {
+            Image(systemName: article.source.iconName)
+                .font(.system(size: 10))
+                .foregroundStyle(sourceColor)
+            Text(article.sourceName)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+            if article.hnPoints > 0 {
+                HStack(spacing: 2) {
+                    Image(systemName: "arrow.up").font(.system(size: 8, weight: .bold))
+                    Text("\(article.hnPoints)").font(.system(size: 11, weight: .semibold, design: .rounded))
+                }
+                .foregroundStyle(.orange)
+            }
+            if let pub = article.publishedAt {
+                Text(pub.formatted(.relative(presentation: .named)))
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.secondary.opacity(0.6))
             }
         }
     }
 
-    var sourceColor: Color {
+    private var heroActions: some View {
+        HStack(spacing: 4) {
+            CardAction(icon: "safari", help: "Open in browser") {
+                if let url = URL(string: article.url) { NSWorkspace.shared.open(url) }
+            }
+            CardAction(icon: article.isBookmarked ? "bookmark.fill" : "bookmark",
+                       help: "Bookmark", tint: article.isBookmarked ? .yellow : nil) {
+                article.isBookmarked.toggle()
+            }
+        }
+        .opacity(isHovered ? 1 : 0)
+    }
+
+    private var bannerGradient: LinearGradient {
+        switch article.source {
+        case .hackerNews:
+            return LinearGradient(colors: [Color(red: 0.95, green: 0.4, blue: 0.1), Color(red: 0.85, green: 0.25, blue: 0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .substack:
+            return LinearGradient(colors: [Color(red: 0.55, green: 0.25, blue: 0.7), Color(red: 0.4, green: 0.15, blue: 0.55)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        case .rss:
+            return LinearGradient(colors: [Color.flipRed, Color(red: 0.75, green: 0.1, blue: 0.12)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        }
+    }
+
+    private var sourceColor: Color {
         switch article.source {
         case .hackerNews: return .orange
         case .substack: return .purple
-        case .rss: return .blue
+        case .rss: return Color.flipRed
         }
     }
 }
 
-// MARK: - Icon Action Button
+// MARK: - Story Card (grid item)
 
-struct IconAction: View {
+struct StoryCard: View {
+    let article: Article
+    let onTap: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Source stripe
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(sourceColor)
+                    .frame(width: 6, height: 6)
+                Text(article.sourceName.uppercased())
+                    .font(.system(size: 9, weight: .heavy))
+                    .tracking(0.8)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                if let topic = article.topicName {
+                    Text(topic)
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.flipRed.opacity(0.1), in: Capsule())
+                        .foregroundStyle(Color.flipRed)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
+            // Title
+            Text(article.title)
+                .font(.system(size: 15, weight: .bold, design: .serif))
+                .foregroundStyle(article.isRead ? .secondary : .primary)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 14)
+
+            // Summary
+            if let summary = article.summary, !summary.isEmpty {
+                Text(summary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 4)
+            }
+
+            Spacer(minLength: 8)
+
+            // Footer
+            HStack(spacing: 6) {
+                if article.hnPoints > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "arrow.up").font(.system(size: 8, weight: .bold))
+                        Text("\(article.hnPoints)").font(.system(size: 10, weight: .semibold, design: .rounded))
+                    }
+                    .foregroundStyle(.orange)
+                }
+                if article.hnComments > 0 {
+                    HStack(spacing: 2) {
+                        Image(systemName: "bubble.left").font(.system(size: 8))
+                        Text("\(article.hnComments)").font(.system(size: 10, design: .rounded))
+                    }
+                    .foregroundStyle(.secondary)
+                }
+                Spacer()
+                if let pub = article.publishedAt {
+                    Text(pub.formatted(.relative(presentation: .named)))
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.secondary.opacity(0.5))
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.bottom, 12)
+        }
+        .frame(minHeight: 160)
+        .background(Color.flipCard, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .stroke(Color.secondary.opacity(isHovered ? 0.15 : 0.06), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(isHovered ? 0.08 : 0.03), radius: isHovered ? 10 : 3, y: isHovered ? 4 : 1)
+        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+        .onHover { h in withAnimation(.easeOut(duration: 0.15)) { isHovered = h } }
+    }
+
+    private var sourceColor: Color {
+        switch article.source {
+        case .hackerNews: return .orange
+        case .substack: return .purple
+        case .rss: return Color.flipRed
+        }
+    }
+}
+
+// MARK: - Card Action
+
+struct CardAction: View {
     let icon: String
     let help: String
     var tint: Color? = nil
@@ -408,7 +424,7 @@ struct IconAction: View {
             Image(systemName: icon)
                 .font(.system(size: 11))
                 .foregroundStyle(tint ?? (isHovered ? .primary : .secondary))
-                .frame(width: 28, height: 28)
+                .frame(width: 26, height: 26)
                 .background(
                     isHovered ? Color.primary.opacity(0.06) : Color.clear,
                     in: RoundedRectangle(cornerRadius: 6, style: .continuous)

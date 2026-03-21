@@ -1,5 +1,13 @@
 import SwiftUI
 
+// Flipboard-inspired color palette
+extension Color {
+    static let flipRed = Color(red: 0.88, green: 0.15, blue: 0.16)
+    static let flipDark = Color(red: 0.09, green: 0.09, blue: 0.11)
+    static let flipCard = Color(nsColor: .controlBackgroundColor)
+    static let flipBg = Color(nsColor: .windowBackgroundColor)
+}
+
 struct ContentView: View {
     @EnvironmentObject var viewModel: NewsViewModel
     @EnvironmentObject var speechService: SpeechService
@@ -7,13 +15,11 @@ struct ContentView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            // Sidebar
-            SidebarView()
-                .frame(width: 240)
+            FlipSidebar()
+                .frame(width: 220)
 
-            // Subtle separator
             Rectangle()
-                .fill(.quaternary.opacity(0.5))
+                .fill(Color.black.opacity(0.08))
                 .frame(width: 1)
 
             // Main content
@@ -35,216 +41,168 @@ struct ContentView: View {
             ArticleReaderView(article: article)
                 .frame(width: 900, height: 650)
         }
-        .frame(minWidth: 960, minHeight: 640)
-        .background(Color(nsColor: .windowBackgroundColor))
+        .frame(minWidth: 1000, minHeight: 660)
+        .background(Color.flipBg)
     }
 }
 
-// MARK: - Sidebar
+// MARK: - Flipboard Sidebar
 
-struct SidebarView: View {
+struct FlipSidebar: View {
     @EnvironmentObject var viewModel: NewsViewModel
     @State private var hoveredTab: NewsViewModel.AppTab?
 
     var body: some View {
         VStack(spacing: 0) {
-            // App title
+            // Logo area
             HStack(spacing: 10) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.blue, Color.indigo],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 32, height: 32)
-
-                    Image(systemName: "newspaper.fill")
-                        .font(.system(size: 15, weight: .semibold))
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.flipRed)
+                        .frame(width: 30, height: 30)
+                    Text("N")
+                        .font(.system(size: 17, weight: .black, design: .serif))
                         .foregroundStyle(.white)
                 }
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("NewsDigest")
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    Text(viewModel.isFetching ? "Updating..." : statusText)
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
-                }
-
+                Text("NewsDigest")
+                    .font(.system(size: 16, weight: .bold, design: .serif))
                 Spacer()
-
-                // Refresh button
-                Button {
-                    Task { await viewModel.fetchAllNews() }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 26, height: 26)
-                        .background(.quaternary.opacity(0.5), in: Circle())
-                }
-                .buttonStyle(.plain)
-                .disabled(viewModel.isFetching)
-                .opacity(viewModel.isFetching ? 0.4 : 1)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, 20)
+            .padding(.horizontal, 18)
+            .padding(.top, 20)
+            .padding(.bottom, 24)
 
-            // Navigation items
-            VStack(spacing: 2) {
-                SidebarNavItem(
-                    icon: "newspaper",
-                    label: "Feed",
-                    count: viewModel.articles.count,
-                    accentColor: .blue,
-                    isSelected: viewModel.selectedTab == .feed,
-                    isHovered: hoveredTab == .feed
-                ) {
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        viewModel.selectedTab = .feed
-                    }
+            // Nav items
+            VStack(spacing: 1) {
+                FlipNavItem(icon: "newspaper.fill", label: "Home",
+                            isSelected: viewModel.selectedTab == .feed,
+                            isHovered: hoveredTab == .feed) {
+                    viewModel.selectedTab = .feed
                 }
-                .onHover { h in hoveredTab = h ? .feed : nil }
+                .onHover { hoveredTab = $0 ? .feed : nil }
 
-                SidebarNavItem(
-                    icon: "tag",
-                    label: "Topics",
-                    count: viewModel.topics.filter(\.enabled).count,
-                    accentColor: .purple,
-                    isSelected: viewModel.selectedTab == .topics,
-                    isHovered: hoveredTab == .topics
-                ) {
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        viewModel.selectedTab = .topics
-                    }
+                FlipNavItem(icon: "number", label: "Topics",
+                            isSelected: viewModel.selectedTab == .topics,
+                            isHovered: hoveredTab == .topics) {
+                    viewModel.selectedTab = .topics
                 }
-                .onHover { h in hoveredTab = h ? .topics : nil }
+                .onHover { hoveredTab = $0 ? .topics : nil }
 
-                SidebarNavItem(
-                    icon: "waveform.and.doc",
-                    label: "Digests",
-                    count: viewModel.digests.count,
-                    accentColor: .orange,
-                    isSelected: viewModel.selectedTab == .digests,
-                    isHovered: hoveredTab == .digests
-                ) {
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        viewModel.selectedTab = .digests
-                    }
+                FlipNavItem(icon: "text.document.fill", label: "Digests",
+                            isSelected: viewModel.selectedTab == .digests,
+                            isHovered: hoveredTab == .digests) {
+                    viewModel.selectedTab = .digests
                 }
-                .onHover { h in hoveredTab = h ? .digests : nil }
+                .onHover { hoveredTab = $0 ? .digests : nil }
             }
             .padding(.horizontal, 12)
 
             Spacer()
 
-            // Bottom status + settings
+            // Bottom section
             VStack(spacing: 8) {
-                Rectangle()
-                    .fill(.quaternary.opacity(0.5))
-                    .frame(height: 1)
-                    .padding(.horizontal, 16)
+                // Fetch button
+                Button {
+                    Task { await viewModel.fetchAllNews() }
+                } label: {
+                    HStack(spacing: 8) {
+                        if viewModel.isFetching {
+                            ProgressView()
+                                .scaleEffect(0.45)
+                                .frame(width: 14, height: 14)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        Text(viewModel.isFetching ? "Updating..." : "Refresh")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color.flipRed.opacity(viewModel.isFetching ? 0.06 : 0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .foregroundStyle(Color.flipRed)
+                }
+                .buttonStyle(.plain)
+                .disabled(viewModel.isFetching)
+                .padding(.horizontal, 14)
 
-                // Status indicator
-                HStack(spacing: 8) {
+                // Status
+                HStack(spacing: 6) {
                     Circle()
                         .fill(viewModel.isFetching ? Color.orange : Color.green)
-                        .frame(width: 6, height: 6)
-
+                        .frame(width: 5, height: 5)
                     if let lastFetch = viewModel.lastFetchDate {
                         Text(lastFetch.formatted(.relative(presentation: .named)))
-                            .font(.system(size: 11))
-                            .foregroundStyle(.tertiary)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
                     }
-
                     Spacer()
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 18)
 
-                // Settings button
-                SidebarNavItem(
-                    icon: "gearshape",
-                    label: "Settings",
-                    count: 0,
-                    accentColor: .gray,
-                    isSelected: viewModel.selectedTab == .settings,
-                    isHovered: hoveredTab == .settings
-                ) {
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        viewModel.selectedTab = .settings
-                    }
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.1))
+                    .frame(height: 1)
+                    .padding(.horizontal, 14)
+
+                // Settings
+                FlipNavItem(icon: "gearshape", label: "Settings",
+                            isSelected: viewModel.selectedTab == .settings,
+                            isHovered: hoveredTab == .settings) {
+                    viewModel.selectedTab = .settings
                 }
-                .onHover { h in hoveredTab = h ? .settings : nil }
+                .onHover { hoveredTab = $0 ? .settings : nil }
                 .padding(.horizontal, 12)
             }
-            .padding(.bottom, 12)
+            .padding(.bottom, 14)
         }
         .background(
             VisualEffectBackground(material: .sidebar, blendingMode: .behindWindow)
         )
     }
-
-    private var statusText: String {
-        if let lastFetch = viewModel.lastFetchDate {
-            return "Updated \(lastFetch.formatted(.relative(presentation: .named)))"
-        }
-        return "Ready"
-    }
 }
 
 // MARK: - Sidebar Nav Item
 
-struct SidebarNavItem: View {
+struct FlipNavItem: View {
     let icon: String
     let label: String
-    let count: Int
-    let accentColor: Color
     let isSelected: Bool
     let isHovered: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack(spacing: 11) {
                 Image(systemName: icon)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundStyle(isSelected ? accentColor : .secondary)
-                    .frame(width: 20)
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                    .foregroundStyle(isSelected ? Color.flipRed : .secondary)
+                    .frame(width: 22)
 
                 Text(label)
-                    .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
                 Spacer()
 
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
-                        .foregroundStyle(isSelected ? accentColor : Color.gray)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(
-                            (isSelected ? accentColor.opacity(0.12) : Color.secondary.opacity(0.08)),
-                            in: Capsule()
-                        )
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.flipRed)
+                        .frame(width: 3, height: 18)
                 }
             }
             .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.vertical, 9)
             .background(
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(isSelected ? accentColor.opacity(0.1) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
+                    .fill(isSelected ? Color.flipRed.opacity(0.08) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
             )
         }
         .buttonStyle(.plain)
     }
 }
 
-// MARK: - Visual Effect Background
+// MARK: - Visual Effect
 
 struct VisualEffectBackground: NSViewRepresentable {
     let material: NSVisualEffectView.Material
