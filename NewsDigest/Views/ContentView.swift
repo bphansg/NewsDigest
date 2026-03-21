@@ -55,22 +55,26 @@ struct FlipSidebar: View {
     var body: some View {
         VStack(spacing: 0) {
             // Logo area
-            HStack(spacing: 10) {
+            HStack(spacing: 11) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
                         .fill(Color.flipRed)
-                        .frame(width: 30, height: 30)
+                        .frame(width: 34, height: 34)
                     Text("N")
-                        .font(.system(size: 17, weight: .black, design: .serif))
+                        .font(.system(size: 20, weight: .black, design: .serif))
                         .foregroundStyle(.white)
                 }
-                Text("NewsDigest")
-                    .font(.system(size: 16, weight: .bold, design: .serif))
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("News")
+                        .font(.system(size: 16, weight: .heavy, design: .serif))
+                    + Text("Digest")
+                        .font(.system(size: 16, weight: .light, design: .serif))
+                }
                 Spacer()
             }
             .padding(.horizontal, 18)
             .padding(.top, 20)
-            .padding(.bottom, 24)
+            .padding(.bottom, 28)
 
             // Nav items
             VStack(spacing: 1) {
