@@ -70,7 +70,9 @@ struct ArticleReaderView: View {
             audioControls
 
             Button {
-                if let url = URL(string: article.url) { NSWorkspace.shared.open(url) }
+                if let url = URL(string: article.url), url.scheme == "https" || url.scheme == "http" {
+                    NSWorkspace.shared.open(url)
+                }
             } label: {
                 HStack(spacing: 4) {
                     Image(systemName: "safari").font(.system(size: 10))
@@ -152,6 +154,11 @@ struct ArticleReaderView: View {
 
     private func readArticleAloud() {
         guard let wv = webView else { return }
+        // Verify the WebView is still on the expected article URL
+        guard let currentURL = wv.url,
+              let expectedURL = URL(string: article.url),
+              currentURL.host == expectedURL.host else { return }
+
         isExtracting = true
 
         let js = """
@@ -175,8 +182,10 @@ struct ArticleReaderView: View {
             DispatchQueue.main.async {
                 isExtracting = false
                 if let text = result as? String, !text.isEmpty {
+                    // Limit text length on Swift side as well
+                    let safeText = String(text.prefix(15000))
                     let intro = article.title + ". From " + article.sourceName + ". "
-                    speechService.speakNatural(intro + text)
+                    speechService.speakNatural(intro + safeText)
                 }
             }
         }
@@ -198,12 +207,17 @@ struct WebView: NSViewRepresentable {
     @Binding var isLoading: Bool
     @Binding var webViewRef: WKWebView?
 
+    private static let allowedSchemes: Set<String> = ["https", "http"]
+
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.defaultWebpagePreferences.allowsContentJavaScript = true
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
-        webView.load(URLRequest(url: url))
+        // Only load if URL scheme is safe
+        if Self.allowedSchemes.contains(url.scheme?.lowercased() ?? "") {
+            webView.load(URLRequest(url: url))
+        }
         DispatchQueue.main.async { self.webViewRef = webView }
         return webView
     }
@@ -216,6 +230,7 @@ struct WebView: NSViewRepresentable {
 
     class Coordinator: NSObject, WKNavigationDelegate {
         @Binding var isLoading: Bool
+        private let allowedSchemes: Set<String> = ["https", "http"]
 
         init(isLoading: Binding<Bool>) { _isLoading = isLoading }
 
@@ -228,9 +243,13 @@ struct WebView: NSViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction) async -> WKNavigationActionPolicy {
-            if navigationAction.navigationType == .linkActivated,
-               navigationAction.targetFrame == nil,
-               let url = navigationAction.request.url {
+            guard let url = navigationAction.request.url,
+                  let scheme = url.scheme?.lowercased(),
+                  allowedSchemes.contains(scheme) else {
+                return .cancel
+            }
+            // Open clicked links in external browser
+            if navigationAction.navigationType == .linkActivated {
                 NSWorkspace.shared.open(url)
                 return .cancel
             }

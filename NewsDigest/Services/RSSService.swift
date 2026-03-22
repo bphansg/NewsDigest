@@ -52,16 +52,24 @@ actor RSSService {
         }
     }
 
+    /// Maximum feed response size: 5 MB
+    private static let maxResponseSize = 5 * 1024 * 1024
+
     private func parseFeed(source: FeedSource) async -> [FeedItem] {
         guard let url = URL(string: source.url) else { return [] }
         do {
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
-            let (data, _) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await URLSession.shared.data(for: request)
+            // Validate response
+            if let httpResponse = response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                return []
+            }
+            guard data.count <= Self.maxResponseSize else { return [] }
             guard let xmlString = String(data: data, encoding: .utf8) else { return [] }
             return parseXML(xmlString, source: source)
         } catch {
-            print("⚠️ Failed to fetch \(source.name): \(error.localizedDescription)")
             return []
         }
     }
@@ -142,22 +150,22 @@ actor RSSService {
         return items
     }
 
-    // Cache compiled regexes per tag name
-    private static var cdataRegexCache = [String: NSRegularExpression]()
-    private static var tagRegexCache = [String: NSRegularExpression]()
+    // Cache compiled regexes per tag name (instance-level, actor-isolated)
+    private var cdataRegexCache = [String: NSRegularExpression]()
+    private var tagRegexCache = [String: NSRegularExpression]()
 
     private func extractTag(_ tag: String, from block: String) -> String? {
         let nsRange = NSRange(block.startIndex..., in: block)
 
         // Handle CDATA: <tag><![CDATA[content]]></tag>
         let cdataRegex: NSRegularExpression
-        if let cached = Self.cdataRegexCache[tag] {
+        if let cached = cdataRegexCache[tag] {
             cdataRegex = cached
         } else if let compiled = try? NSRegularExpression(
             pattern: "<\(tag)[^>]*>\\s*<!\\[CDATA\\[(.+?)\\]\\]>\\s*</\(tag)>",
             options: .dotMatchesLineSeparators
         ) {
-            Self.cdataRegexCache[tag] = compiled
+            cdataRegexCache[tag] = compiled
             cdataRegex = compiled
         } else {
             cdataRegex = NSRegularExpression()
@@ -171,13 +179,13 @@ actor RSSService {
 
         // Standard tag
         let tagRegex: NSRegularExpression
-        if let cached = Self.tagRegexCache[tag] {
+        if let cached = tagRegexCache[tag] {
             tagRegex = cached
         } else if let compiled = try? NSRegularExpression(
             pattern: "<\(tag)[^>]*>(.+?)</\(tag)>",
             options: .dotMatchesLineSeparators
         ) {
-            Self.tagRegexCache[tag] = compiled
+            tagRegexCache[tag] = compiled
             tagRegex = compiled
         } else {
             tagRegex = NSRegularExpression()

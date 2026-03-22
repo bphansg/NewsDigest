@@ -416,7 +416,7 @@ struct DigestArticleRow: View {
             HStack(spacing: 2) {
                 CardAction(icon: "doc.text", help: "Read") { onRead() }
                 CardAction(icon: "safari", help: "Browser") {
-                    if let url = URL(string: article.url) { NSWorkspace.shared.open(url) }
+                    if let url = URL(string: article.url), url.scheme == "https" || url.scheme == "http" { NSWorkspace.shared.open(url) }
                 }
             }
             .opacity(isHovered ? 1 : 0)

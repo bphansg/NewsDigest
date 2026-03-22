@@ -186,13 +186,11 @@ struct MenuBarView: View {
     }
 
     private func restartApp() {
-        let url = URL(fileURLWithPath: Bundle.main.resourcePath!)
-        let path = url.deletingLastPathComponent().deletingLastPathComponent().absoluteString
-        let task = Process()
-        task.launchPath = "/usr/bin/open"
-        task.arguments = ["-n", path]
-        task.launch()
-
+        let bundleURL = Bundle.main.bundleURL
+        // Use NSWorkspace for safe relaunch — no Process() needed
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            NSWorkspace.shared.open(bundleURL)
+        }
         NSApp.terminate(nil)
     }
 }

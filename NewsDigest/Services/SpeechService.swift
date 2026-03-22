@@ -118,16 +118,20 @@ class SpeechService: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
             return voice
         }
 
-        // Fallback to any en-US voice
-        let fallback = AVSpeechSynthesisVoice(language: "en-US")!
+        // Fallback to any en-US voice, or first available voice
+        let fallback = AVSpeechSynthesisVoice(language: "en-US")
+            ?? AVSpeechSynthesisVoice.speechVoices().first
+            ?? AVSpeechSynthesisVoice()
         _bestVoice = fallback
-        print("Using default voice: \(fallback.name) (\(fallback.language))")
         return fallback
     }
 
     /// Save speech to an audio file (AIFF on macOS).
     func saveToFile(_ text: String, filename: String, completion: @escaping (URL?) -> Void) {
-        let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            completion(nil)
+            return
+        }
         let digestsDir = documentsDir.appendingPathComponent("NewsDigest", isDirectory: true)
         try? FileManager.default.createDirectory(at: digestsDir, withIntermediateDirectories: true)
         let fileURL = digestsDir.appendingPathComponent("\(filename).aiff")
