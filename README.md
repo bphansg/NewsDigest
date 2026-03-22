@@ -4,6 +4,20 @@ A native macOS app that automatically curates the most interesting tech news 24/
 
 **Author:** Binh Phan
 
+## Screenshots
+
+| Feed | Topics |
+|------|--------|
+| ![Feed](screenshots/feed.png) | ![Topics](screenshots/topics.png) |
+
+| Digest Detail | Digest List |
+|---------------|-------------|
+| ![Digest Detail](screenshots/digests-detail.png) | ![Digest List](screenshots/digests-list.png) |
+
+| Settings |
+|----------|
+| ![Settings](screenshots/settings.png) |
+
 ## Architecture
 
 <p align="center">
