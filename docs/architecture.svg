@@ -1,0 +1,285 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 780" font-family="'SF Pro Display', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E12828"/>
+      <stop offset="100%" style="stop-color:#B80D0D"/>
+    </linearGradient>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B18"/>
+      <stop offset="100%" style="stop-color:#D44A00"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8E44AD"/>
+      <stop offset="100%" style="stop-color:#6C1D8E"/>
+    </linearGradient>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2980B9"/>
+      <stop offset="100%" style="stop-color:#1A5276"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#27AE60"/>
+      <stop offset="100%" style="stop-color:#1E8449"/>
+    </linearGradient>
+    <linearGradient id="darkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2C3E50"/>
+      <stop offset="100%" style="stop-color:#1A252F"/>
+    </linearGradient>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1ABC9C"/>
+      <stop offset="100%" style="stop-color:#148F77"/>
+    </linearGradient>
+
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+    <filter id="shadowLg" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+
+    <!-- Arrow marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#B0B0B0"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#E12828"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="780" rx="12" fill="#F8F8FA"/>
+
+  <!-- Title -->
+  <text x="550" y="42" text-anchor="middle" font-size="22" font-weight="800" fill="#1A1A1C" letter-spacing="-0.5">
+    <tspan font-style="italic" font-family="Georgia, serif">News</tspan><tspan font-weight="300" font-family="Georgia, serif">Digest</tspan>
+    <tspan font-weight="400" font-size="14" fill="#888"> — Architecture</tspan>
+  </text>
+  <line x1="480" y1="52" x2="520" y2="52" stroke="#E12828" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- ============================================ -->
+  <!-- DATA SOURCES (top row) -->
+  <!-- ============================================ -->
+  <text x="195" y="88" text-anchor="middle" font-size="10" font-weight="700" fill="#999" letter-spacing="1.5">DATA SOURCES</text>
+
+  <!-- Hacker News -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="100" width="130" height="64" rx="10" fill="url(#orangeGrad)"/>
+    <text x="105" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="white">🔥 HN API</text>
+    <text x="105" y="146" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.75)">Firebase · Top 60</text>
+  </g>
+
+  <!-- RSS Feeds -->
+  <g filter="url(#shadow)">
+    <rect x="185" y="100" width="130" height="64" rx="10" fill="url(#redGrad)"/>
+    <text x="250" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="white">📡 RSS</text>
+    <text x="250" y="146" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.75)">5 feeds · XML parser</text>
+  </g>
+
+  <!-- Substack -->
+  <g filter="url(#shadow)">
+    <rect x="330" y="100" width="130" height="64" rx="10" fill="url(#purpleGrad)"/>
+    <text x="395" y="126" text-anchor="middle" font-size="16" font-weight="700" fill="white">📨 Substack</text>
+    <text x="395" y="146" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.75)">5 newsletters</text>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- SERVICES LAYER (middle) -->
+  <!-- ============================================ -->
+  <text x="550" y="208" text-anchor="middle" font-size="10" font-weight="700" fill="#999" letter-spacing="1.5">SERVICES LAYER</text>
+
+  <!-- Arrows from sources to services -->
+  <line x1="105" y1="164" x2="210" y2="222" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="250" y1="164" x2="310" y2="222" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="395" y1="164" x2="400" y2="222" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- HN Service -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="224" width="180" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="120" y="224" width="4" height="56" rx="2" fill="url(#orangeGrad)"/>
+    <text x="140" y="248" font-size="12" font-weight="700" fill="#1A1A1C">HackerNewsService</text>
+    <text x="140" y="264" font-size="9" fill="#888">async/await · TaskGroup(10)</text>
+  </g>
+
+  <!-- RSS Service -->
+  <g filter="url(#shadow)">
+    <rect x="315" y="224" width="180" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="315" y="224" width="4" height="56" rx="2" fill="url(#redGrad)"/>
+    <text x="335" y="248" font-size="12" font-weight="700" fill="#1A1A1C">RSSService</text>
+    <text x="335" y="264" font-size="9" fill="#888">XML parser · cached regex</text>
+  </g>
+
+  <!-- Topic Matcher -->
+  <g filter="url(#shadow)">
+    <rect x="510" y="224" width="180" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="510" y="224" width="4" height="56" rx="2" fill="url(#blueGrad)"/>
+    <text x="530" y="248" font-size="12" font-weight="700" fill="#1A1A1C">TopicMatcher</text>
+    <text x="530" y="264" font-size="9" fill="#888">keyword ranking engine</text>
+  </g>
+
+  <!-- Scheduler Service -->
+  <g filter="url(#shadow)">
+    <rect x="705" y="224" width="180" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="705" y="224" width="4" height="56" rx="2" fill="url(#greenGrad)"/>
+    <text x="725" y="248" font-size="12" font-weight="700" fill="#1A1A1C">SchedulerService</text>
+    <text x="725" y="264" font-size="9" fill="#888">background timer · notifications</text>
+  </g>
+
+  <!-- Speech Service -->
+  <g filter="url(#shadow)">
+    <rect x="900" y="224" width="170" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="900" y="224" width="4" height="56" rx="2" fill="url(#tealGrad)"/>
+    <text x="920" y="248" font-size="12" font-weight="700" fill="#1A1A1C">SpeechService</text>
+    <text x="920" y="264" font-size="9" fill="#888">AVSpeech · premium voice</text>
+  </g>
+
+  <!-- Digest Generator -->
+  <g filter="url(#shadow)">
+    <rect x="705" y="296" width="180" height="56" rx="8" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="705" y="296" width="4" height="56" rx="2" fill="url(#purpleGrad)"/>
+    <text x="725" y="320" font-size="12" font-weight="700" fill="#1A1A1C">DigestGenerator</text>
+    <text x="725" y="336" font-size="9" fill="#888">podcast script · reports</text>
+  </g>
+
+  <!-- Arrow from scheduler to services -->
+  <path d="M 795 280 Q 795 300 600 286 Q 400 280 300 280" stroke="#27AE60" stroke-width="1.2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+  <text x="560" y="296" font-size="8" fill="#27AE60" font-weight="600">auto-fetch trigger</text>
+
+  <!-- ============================================ -->
+  <!-- VIEWMODEL (center hub) -->
+  <!-- ============================================ -->
+
+  <!-- Central hub -->
+  <g filter="url(#shadowLg)">
+    <rect x="280" y="388" width="260" height="72" rx="12" fill="url(#darkGrad)"/>
+    <text x="410" y="417" text-anchor="middle" font-size="15" font-weight="800" fill="white">NewsViewModel</text>
+    <text x="410" y="436" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.6)">State · Coordination · Caching</text>
+    <text x="410" y="450" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">Set&lt;URL&gt; dedup · ranked cache · @Published</text>
+  </g>
+
+  <!-- Arrows from services to ViewModel -->
+  <line x1="210" y1="280" x2="330" y2="388" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="405" y1="280" x2="405" y2="386" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="600" y1="280" x2="500" y2="388" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============================================ -->
+  <!-- PERSISTENCE (SwiftData) -->
+  <!-- ============================================ -->
+  <text x="810" y="400" font-size="10" font-weight="700" fill="#999" letter-spacing="1.5">PERSISTENCE</text>
+
+  <g filter="url(#shadow)">
+    <rect x="690" y="410" width="190" height="76" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <text x="785" y="434" text-anchor="middle" font-size="13" font-weight="700" fill="#1A1A1C">SwiftData</text>
+    <line x1="720" y1="442" x2="850" y2="442" stroke="#E8E8EB" stroke-width="1"/>
+    <text x="724" y="458" font-size="10" fill="#555">📄 Article</text>
+    <text x="786" y="458" font-size="10" fill="#555">🏷️ Topic</text>
+    <text x="724" y="475" font-size="10" fill="#555">📑 Digest</text>
+  </g>
+
+  <!-- ViewModel <-> SwiftData -->
+  <line x1="540" y1="430" x2="688" y2="440" stroke="#E12828" stroke-width="1.8" marker-end="url(#arrowRed)"/>
+  <text x="610" y="426" font-size="8" fill="#E12828" font-weight="600">read/write</text>
+
+  <!-- ============================================ -->
+  <!-- VIEWS LAYER (bottom) -->
+  <!-- ============================================ -->
+  <text x="440" y="515" text-anchor="middle" font-size="10" font-weight="700" fill="#999" letter-spacing="1.5">PRESENTATION LAYER — SwiftUI</text>
+
+  <!-- Arrows from ViewModel to Views -->
+  <line x1="340" y1="460" x2="170" y2="530" stroke="#E12828" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowRed)"/>
+  <line x1="380" y1="460" x2="340" y2="530" stroke="#E12828" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowRed)"/>
+  <line x1="420" y1="460" x2="510" y2="530" stroke="#E12828" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowRed)"/>
+  <line x1="470" y1="460" x2="680" y2="530" stroke="#E12828" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowRed)"/>
+  <text x="275" y="500" font-size="8" fill="#E12828" font-weight="600">@Published → @EnvironmentObject</text>
+
+  <!-- FeedView -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="532" width="220" height="100" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="40" y="532" width="220" height="28" rx="10" fill="url(#redGrad)"/>
+    <rect x="40" y="550" width="220" height="4" fill="url(#redGrad)"/>
+    <text x="150" y="551" text-anchor="middle" font-size="11" font-weight="700" fill="white">FeedView</text>
+    <text x="56" y="576" font-size="9" fill="#555">🃏 CoverCard — hero layout</text>
+    <text x="56" y="592" font-size="9" fill="#555">📰 EditorialCard — pair grid</text>
+    <text x="56" y="608" font-size="9" fill="#555">📐 WideCard — full-width accent</text>
+    <text x="56" y="624" font-size="9" fill="#555">🔍 Search · Filter · Sort</text>
+  </g>
+
+  <!-- TopicsView -->
+  <g filter="url(#shadow)">
+    <rect x="275" y="532" width="190" height="100" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="275" y="532" width="190" height="28" rx="10" fill="url(#purpleGrad)"/>
+    <rect x="275" y="550" width="190" height="4" fill="url(#purpleGrad)"/>
+    <text x="370" y="551" text-anchor="middle" font-size="11" font-weight="700" fill="white">TopicsView</text>
+    <text x="291" y="576" font-size="9" fill="#555">🏷️ TopicTile — 3-col grid</text>
+    <text x="291" y="592" font-size="9" fill="#555">➕ AddTopicSheet</text>
+    <text x="291" y="608" font-size="9" fill="#555">🔤 FlowLayout keywords</text>
+    <text x="291" y="624" font-size="9" fill="#555">⚡ Enable/disable toggle</text>
+  </g>
+
+  <!-- DigestsView -->
+  <g filter="url(#shadow)">
+    <rect x="480" y="532" width="190" height="100" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="480" y="532" width="190" height="28" rx="10" fill="url(#blueGrad)"/>
+    <rect x="480" y="550" width="190" height="4" fill="url(#blueGrad)"/>
+    <text x="575" y="551" text-anchor="middle" font-size="11" font-weight="700" fill="white">DigestsView</text>
+    <text x="496" y="576" font-size="9" fill="#555">🎙️ Podcast-style script</text>
+    <text x="496" y="592" font-size="9" fill="#555">🔊 Play / Pause / Stop</text>
+    <text x="496" y="608" font-size="9" fill="#555">📋 Markdown reports</text>
+    <text x="496" y="624" font-size="9" fill="#555">📝 Split list + detail</text>
+  </g>
+
+  <!-- SettingsView + MenuBar -->
+  <g filter="url(#shadow)">
+    <rect x="685" y="532" width="190" height="100" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="685" y="532" width="190" height="28" rx="10" fill="url(#greenGrad)"/>
+    <rect x="685" y="550" width="190" height="4" fill="url(#greenGrad)"/>
+    <text x="780" y="551" text-anchor="middle" font-size="11" font-weight="700" fill="white">Settings + System</text>
+    <text x="701" y="576" font-size="9" fill="#555">⚙️ Schedule · Storage config</text>
+    <text x="701" y="592" font-size="9" fill="#555">📊 MenuBarView — top 7</text>
+    <text x="701" y="608" font-size="9" fill="#555">🔄 Background running</text>
+    <text x="701" y="624" font-size="9" fill="#555">👤 About — Binh Phan</text>
+  </g>
+
+  <!-- Article Reader (overlay) -->
+  <g filter="url(#shadow)">
+    <rect x="895" y="532" width="170" height="100" rx="10" fill="white" stroke="#E8E8EB" stroke-width="1"/>
+    <rect x="895" y="532" width="170" height="28" rx="10" fill="url(#tealGrad)"/>
+    <rect x="895" y="550" width="170" height="4" fill="url(#tealGrad)"/>
+    <text x="980" y="551" text-anchor="middle" font-size="11" font-weight="700" fill="white">ArticleReader</text>
+    <text x="911" y="576" font-size="9" fill="#555">🌐 WKWebView</text>
+    <text x="911" y="592" font-size="9" fill="#555">🎧 Listen — JS extraction</text>
+    <text x="911" y="608" font-size="9" fill="#555">⏯️ Play / Pause / Stop</text>
+    <text x="911" y="624" font-size="9" fill="#555">🔗 Open in browser</text>
+  </g>
+
+  <!-- ============================================ -->
+  <!-- APP ENTRY (bottom) -->
+  <!-- ============================================ -->
+  <g filter="url(#shadow)">
+    <rect x="300" y="680" width="500" height="50" rx="10" fill="url(#darkGrad)"/>
+    <text x="550" y="702" text-anchor="middle" font-size="12" font-weight="700" fill="white">NewsDigestApp.swift</text>
+    <text x="550" y="718" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">WindowGroup · MenuBarExtra · AppDelegate (background) · SwiftData ModelContainer</text>
+  </g>
+
+  <!-- Arrows from views to app -->
+  <line x1="150" y1="632" x2="390" y2="678" stroke="#B0B0B0" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="370" y1="632" x2="460" y2="678" stroke="#B0B0B0" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="575" y1="632" x2="560" y2="678" stroke="#B0B0B0" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="780" y1="632" x2="680" y2="678" stroke="#B0B0B0" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- ============================================ -->
+  <!-- LEGEND -->
+  <!-- ============================================ -->
+  <g transform="translate(900, 90)">
+    <text x="0" y="0" font-size="9" font-weight="700" fill="#999" letter-spacing="1">LEGEND</text>
+    <line x1="0" y1="16" x2="24" y2="16" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="30" y="20" font-size="9" fill="#666">Data flow</text>
+    <line x1="0" y1="34" x2="24" y2="34" stroke="#E12828" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrowRed)"/>
+    <text x="30" y="38" font-size="9" fill="#666">Reactive binding</text>
+    <line x1="0" y1="52" x2="24" y2="52" stroke="#27AE60" stroke-width="1.2" stroke-dasharray="4 3"/>
+    <text x="30" y="56" font-size="9" fill="#666">Scheduled trigger</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="550" y="762" text-anchor="middle" font-size="9" fill="#BBB">Zero dependencies · Pure Apple frameworks · SwiftUI + SwiftData + AVFoundation</text>
+</svg>
