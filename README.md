@@ -12,9 +12,11 @@ A native macOS app that automatically curates the most interesting tech news 24/
 ### Topics
 ![Topics](screenshots/topics.png)
 
-| Digest Detail | Settings |
-|---------------|----------|
-| ![Digest Detail](screenshots/digests-detail.png) | ![Settings](screenshots/settings.png) |
+### Digest Detail
+![Digest Detail](screenshots/digests-detail.png)
+
+### Settings
+![Settings](screenshots/settings.png)
 
 ## Architecture
 
